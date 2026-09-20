@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+FN Assignment 06 - Sep 10 Release Sep 20 Deadline/
