@@ -21,5 +21,8 @@ This is a local Python inbox-management pipeline without an agent framework. It 
   - `escalate`: The message is ambiguous, sensitive, suspicious, or requires human judgment before acting.
 - **Rule and model routing:** 74 messages are classified by rules and 26 by the model. In the full Part 2–3 demonstration, 73 messages need no model call at all, because one rule-classified message also receives a model-generated draft.
 - **Retrieval:** Walk earlier messages in the same `thread_id`, with keyword-based retrieval of earlier scheduling notes from another thread when relevant.
+- **Reversible and irreversible actions:** Classifications and drafts can be changed. Sending is irreversible because a sent message cannot be unsent. Deleting is not implemented; with no trash or restore mechanism in this design, deletion would also be irreversible.
+- **Gate:** Before each send, the system displays the full proposed message and requires the person to type `yes`. Any other answer prevents the outbox write. Each answer and outcome is recorded in `trace.jsonl`.
+- **Escalation line:** Approval is required for sending, not for creating drafts or classifying messages. This reduces repeated approval prompts, but means a classification can be wrong until a person reviews it.
 
 

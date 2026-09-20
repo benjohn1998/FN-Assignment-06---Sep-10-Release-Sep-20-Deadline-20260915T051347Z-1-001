@@ -1,0 +1,8 @@
+{
+  "action": "send",
+  "reply_to_id": "m043",
+  "from": "sam@paperjet.io",
+  "to": "aria.f@northwind.vc",
+  "subject": "Re: one more slot",
+  "body": "Monday at 9:00am conflicts with my rule that I do not take meetings before 11:00am. Could we schedule this for 11:00am or later instead?"
+}

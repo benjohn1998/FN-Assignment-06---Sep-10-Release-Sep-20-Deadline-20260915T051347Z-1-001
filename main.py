@@ -1,6 +1,7 @@
 import json
 from llm import chat
-from retrieval import create_grounded_reply
+from retrieval import create_grounded_reply, find_message_by_id
+from actions import send_with_approval
 
 
 MAILBOX_OWNER_EMAIL = "sam@paperjet.io"
@@ -481,6 +482,11 @@ def main():
         print( "Source message IDs: " + ", ".join(grounded_result["source_message_ids"]) )
 
         print(f"Draft: {grounded_result['draft']}")
+
+        target_message = find_message_by_id ( messages, grounded_result["target_message_id"], )
+        outcome = send_with_approval( target_message, grounded_result["draft"], MAILBOX_OWNER_EMAIL, )
+        print("Send result:", outcome)
+
     else:
         print(grounded_result["status"])
 
