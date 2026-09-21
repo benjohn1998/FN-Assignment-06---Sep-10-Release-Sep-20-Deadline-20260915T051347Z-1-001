@@ -24,5 +24,4 @@ This is a local Python inbox-management pipeline without an agent framework. It 
 - **Reversible and irreversible actions:** Classifications and drafts can be changed. Sending is irreversible because a sent message cannot be unsent. Deleting is not implemented; with no trash or restore mechanism in this design, deletion would also be irreversible.
 - **Gate:** Before each send, the system displays the full proposed message and requires the person to type `yes`. Any other answer prevents the outbox write. Each answer and outcome is recorded in `trace.jsonl`.
 - **Escalation line:** Approval is required for sending, not for creating drafts or classifying messages. This reduces repeated approval prompts, but means a classification can be wrong until a person reviews it.
-
-
+- **Persistent preference:** Sam's note `m041` says not to accept meetings before 11:00am. The system saves this rule in `preferences.json`. After the process exits, a new run reads it and treats the 9:00am proposal in `m043` as a conflict, offering 11:00am or later.
