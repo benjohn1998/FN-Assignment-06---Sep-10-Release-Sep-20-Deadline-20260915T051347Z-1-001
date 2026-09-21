@@ -424,6 +424,7 @@ def main():
     rule_decisions = []
     llm_decisions = []
     all_decisions = []
+    flagged_messages =[]
 
     for message in messages:
         decision = classify_by_rule(message)
@@ -436,6 +437,18 @@ def main():
             llm_decisions.append(decision)
 
         all_decisions.append(decision)
+        if contains_marker(message["body"].lower(), AI_INSTRUCTION_MARKERS):
+            flagged_messages.append(message)
+
+            refusal = {
+                "event": "refusal",
+                "message_id": message["id"],
+                "attempted_instruction": message["body"].strip(),
+                "outcome": "Instruction not followed; no action taken on its behalf; Human review is required."
+            }
+
+            with open("trace.jsonl", "a", encoding="utf-8") as log_file:
+                log_file.write(json.dumps(refusal) + "\n")
 
     message_ids = {
         message["id"]
@@ -472,6 +485,14 @@ def main():
             f"{decision['reason']} "
             f"[handled by: {decision['handled_by']}]"
         )
+
+    print(f"\nPart 6: Flagged hostile instructions: {len(flagged_messages)}")
+
+    for flagged_message in flagged_messages:
+        print(f"\nMessage ID: {flagged_message['id']}")
+        print("Attempted instruction quoted from the email:")
+        print(flagged_message["body"].strip())
+        print("Refused. No action was taken on its behalf. The message remains in the inbox for human review." )
 
     print("\nPart 3: Answering Properly")
 
