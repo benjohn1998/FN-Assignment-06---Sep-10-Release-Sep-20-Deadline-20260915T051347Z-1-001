@@ -2,6 +2,7 @@ import json
 from llm import chat
 from retrieval import create_grounded_reply, find_message_by_id
 from actions import send_with_approval
+import dashboard
 
 
 MAILBOX_OWNER_EMAIL = "sam@paperjet.io"
@@ -497,6 +498,7 @@ def main():
     print("\nPart 3: Answering Properly")
 
     grounded_result = create_grounded_reply(messages, "m043")
+    outcome = None
 
     if grounded_result["draft"] is not None:
         print(f"\nReply to {grounded_result['target_message_id']}:")
@@ -517,6 +519,20 @@ def main():
         f"\n{missing_result['target_message_id']}: "
         f"{missing_result['status']}"
     )
+
+    pending = dashboard.collect_pending_actions(
+        messages, grounded_result, outcome
+    )
+    flagged = dashboard.collect_flagged(
+        messages, all_decisions, flagged_messages, missing_result
+    )
+    commitments = dashboard.collect_calendar_entries(messages)
+    conflicts = dashboard.find_conflicts(commitments)
+
+    dashboard_path = dashboard.write_dashboard(
+        pending, flagged, commitments, conflicts, messages
+)
+    print(f"\nPart 7 dashboard written to: {dashboard_path}")
     
 if __name__ == "__main__":
     main()

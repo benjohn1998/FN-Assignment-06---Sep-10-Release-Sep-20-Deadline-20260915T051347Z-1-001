@@ -8,6 +8,10 @@
 This is a local Python inbox-management pipeline without an agent framework. It loads 100 messages from `inbox.json`, uses rules for obvious cases, and sends the remaining messages to a local Ollama model for classification. It also demonstrates a reply grounded in an earlier inbox message.
 
 
+## Framework choice
+
+No agent framework is used. The system uses Python functions because its local workflow—classification, retrieval, approval, and logging—can be handled directly without multi-agent orchestration. 
+
 ## Design Choices
 
 - **Framework:** None so far. The current work uses Python functions and a local Ollama model.
@@ -26,3 +30,12 @@ This is a local Python inbox-management pipeline without an agent framework. It 
 - **Escalation line:** Approval is required for sending, not for creating drafts or classifying messages. This reduces repeated approval prompts, but means a classification can be wrong until a person reviews it.
 - **Persistent preference:** Sam's note `m041` says not to accept meetings before 11:00am. The system saves this rule in `preferences.json`. After the process exits, a new run reads it and treats the 9:00am proposal in `m043` as a conflict, offering 11:00am or later.
 - **Hostile inbox:** Messages m017, m024, m039, and m047 contained instructions aimed at the assistant. The system treats their text as untrusted, escalates and reports them, logs each refusal, and leaves the messages in the inbox. Sending remains behind the Part 4 approval gate.
+
+
+## Part 7 — Dashboard
+
+The system generates `dashboard.txt` from a completed run with exactly three panes: Pending Actions, Flagged, and Commitments Calendar. Calendar source message IDs are checked against `inbox.json`.
+
+The dashboard combines the launch commitment from m026 and m036 into one entry. It also flags the potential 3:00pm conflict between m010 and m061. Pending sends require human approval, and refused or ungrounded messages appear in Flagged.
+
+Run `python main.py` to regenerate the dashboard.
