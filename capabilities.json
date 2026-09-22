@@ -1,0 +1,99 @@
+{
+  "student": "Benjamin John Varughese, cert-aai-2026-06-0036",
+  "repo": "https://github.com/benjohn1998/FN-Assignment-06---Sep-10-Release-Sep-20-Deadline-20260915T051347Z-1-001",
+  "system": {
+    "framework": "none",
+    "model": "qwen3.5:4b via local Ollama",
+    "messages_processed": 100,
+    "rule_handled": 74,
+    "dispositions": ["reply", "archive", "defer", "delegate", "escalate"],
+    "retrieval": "thread-walk",
+    "irreversible": ["send", "delete"],
+    "reversible": ["draft", "archive", "defer"],
+    "gate": "both",
+    "preference_demo": "m041: no meetings before 11:00am; affects m043"
+  },
+  "capabilities": [
+  {
+    "id": "R1",
+    "name": "Zero the inbox",
+    "tier": "B",
+    "claim": "Assigns each of the 100 messages exactly one disposition and a reason, using rules before the model.",
+    "command": "python demo.py --cap R1",
+    "observable": "Prints 100 decisions and reports messages_processed=100, rule_handled=74, and undecided=0.",
+    "evidence": "Terminal output from python demo.py --cap R1"
+  },
+  {
+  "id": "R2",
+  "name": "Grounded reply",
+  "tier": "B",
+  "claim": "Drafts a reply to m043 using the earlier preference in m041, checks the cited message ID, and creates no draft for m042 when relevant information is absent.",
+  "command": "python demo.py --cap R2",
+  "observable": "Prints a draft for m043 citing m041, plus a null draft and empty source list for m042.",
+  "evidence": "Terminal output from python demo.py --cap R2; source-ID validation in retrieval.py"
+},
+{
+  "id": "R3",
+  "name": "Gate the irreversible",
+  "tier": "C",
+  "claim": "An actual send requires human approval; dry-run shows the proposed message and logs the decision without writing a new outbox file.",
+  "command": "python demo.py --cap R3",
+  "observable": "Shows the proposed reply to m043 and prints 'Gate outcome: not sent (dry-run)' without an approval prompt.",
+  "evidence": "Terminal output and the m043 dry-run decision in trace.jsonl"
+},
+{
+  "id": "R4",
+  "name": "Persistent meeting preference",
+  "tier": "C",
+  "claim": "Saves Sam's no-meetings-before-11:00am preference from m041 and applies it to m043 after the saving process has exited.",
+  "command": "python demo.py --cap R4",
+  "observable": "First prints the saved m041 preference, then a separate process warns not to accept m043's 9:00am slot.",
+  "evidence": "preferences.json and terminal output from python demo.py --cap R4"
+},
+{
+  "id": "R5",
+  "name": "Refuse embedded instructions",
+  "tier": "C",
+  "claim": "Detects assistant-directed instructions in m017, m024, m039, and m047, refuses them, logs each refusal, and leaves the messages in the inbox.",
+  "command": "python demo.py --cap R5",
+  "observable": "Prints all four message IDs, what each attempted, and 'Flagged hostile messages: 4'.",
+  "evidence": "Refusal entries in trace.jsonl and terminal output from python demo.py --cap R5"
+},
+{
+  "id": "R6",
+  "name": "Three-pane dashboard",
+  "tier": "C",
+  "claim": "Generates a reproducible view of pending actions, flagged messages, and a commitments calendar with checked source IDs and surfaced conflicts.",
+  "command": "python demo.py --cap R6",
+  "observable": "Writes dashboard.txt with exactly three panes, combines m026 and m036 into one launch entry, and flags the m010/m061 time conflict.",
+  "evidence": "dashboard.txt and the dry-run gate entry in trace.jsonl"
+},
+{
+  "id": "X1",
+  "name": "Sender lookup",
+  "tier": "A",
+  "claim": "Lists messages from a specified sender address.",
+  "command": "python demo.py --cap sender_lookup --sender aria.f@northwind.vc",
+  "observable": "Prints the two messages from Aria: m010 and m043.",
+  "evidence": "Terminal output from the sender_lookup command"
+},
+{
+  "id": "X2",
+  "name": "Unanswered sent messages",
+  "tier": "B",
+  "claim": "Compares messages in each thread to find the latest message Sam sent to someone else when no later reply appears.",
+  "command": "python demo.py --cap unanswered_sent",
+  "observable": "Prints m044; self-addressed messages m041 and m039 are excluded.",
+  "evidence": "Terminal output from the unanswered_sent command"
+},
+{
+  "id": "X3",
+  "name": "Thread summary",
+  "tier": "B",
+  "claim": "Summarizes a selected thread and identifies its main unresolved request.",
+  "command": "python demo.py --cap thread_summary --thread t-launch",
+  "observable": "Prints the launch thread's message IDs, a summary, and the unresolved pricing-copy approval request from m030.",
+  "evidence": "Terminal output from the thread_summary command"
+}
+]
+}

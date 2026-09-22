@@ -1,8 +1,20 @@
 import argparse
 import json
 from llm import chat
+from retrieval import create_grounded_reply, find_message_by_id
+from actions import send_with_approval
+import subprocess
+import sys
 
-from main import MAILBOX_OWNER_EMAIL, load_inbox
+from main import (
+    AI_INSTRUCTION_MARKERS,
+    MAILBOX_OWNER_EMAIL,
+    classify_by_rule,
+    classify_with_llm,
+    contains_marker,
+    load_inbox,
+    main as run_inbox
+)
 
 
 def find_messages_from_sender(messages, sender_email):
@@ -79,6 +91,34 @@ def summarize_thread(messages, thread_id):
         "open_question": result["open_question"],
     }
 
+def demo_zero_inbox(messages):
+    decisions = []
+    rule_handled = 0
+
+    for message in messages:
+        decision = classify_by_rule(message)
+
+        if decision is None:
+            decision = classify_with_llm(message)
+        else:
+            rule_handled += 1
+
+        decisions.append(decision)
+
+    message_ids = {message["id"] for message in messages}
+    decision_ids = {decision["message_id"] for decision in decisions}
+
+    if len(decisions) != len(messages) or message_ids != decision_ids:
+        raise ValueError("Some messages do not have exactly one decision.")
+
+    print(json.dumps({
+        "messages_processed": len(messages),
+        "rule_handled": rule_handled,
+        "undecided": 0,
+        "decisions": decisions,
+    }, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cap", required=True)
@@ -86,7 +126,71 @@ def main():
     parser.add_argument("--thread")
     args = parser.parse_args()
 
-    if args.cap == "sender_lookup":
+    if args.cap == "R1":
+        demo_zero_inbox(load_inbox())
+
+    elif args.cap == "R2":
+        messages = load_inbox()
+        grounded = create_grounded_reply(messages, "m043")
+        missing = create_grounded_reply(messages, "m042")
+
+        print(json.dumps({
+            "grounded_example": grounded,
+            "missing_information_example": missing,
+        }, indent=2))
+
+    elif args.cap == "R3":
+        messages = load_inbox()
+        result = create_grounded_reply(messages, "m043")
+
+        if result["draft"] is None:
+            raise ValueError("No draft is available for the gate demonstration.")
+
+        target = find_message_by_id(messages, result["target_message_id"])
+        outcome = send_with_approval(
+            target, result["draft"], MAILBOX_OWNER_EMAIL, dry_run=True
+        )
+        print("Gate outcome:", outcome)
+
+    elif args.cap == "R4":
+        subprocess.run(
+            [sys.executable, "memory.py", "save", "m041"],
+            check=True,
+        )
+        subprocess.run(
+            [sys.executable, "memory.py", "apply", "m043"],
+            check=True,
+        )
+
+    elif args.cap == "R5":
+        flagged_count = 0
+
+        for message in load_inbox():
+            if not contains_marker(
+                message["body"].lower(), AI_INSTRUCTION_MARKERS
+            ):
+                continue
+
+            flagged_count += 1
+            refusal = {
+                "event": "refusal",
+                "message_id": message["id"],
+                "attempted_instruction": message["body"].strip(),
+                "outcome": "Instruction not followed; no action taken; human review required.",
+            }
+
+            with open("trace.jsonl", "a", encoding="utf-8") as log_file:
+                log_file.write(json.dumps(refusal) + "\n")
+
+            print(f"\n{message['id']}: refused; message left in inbox.")
+            print("Attempted instruction:", message["body"].strip())
+
+        print(f"\nFlagged hostile messages: {flagged_count}")  
+
+    elif args.cap == "R6":
+        run_inbox(dry_run=True)
+
+    elif args.cap == "sender_lookup":
         if not args.sender:
             parser.error("sender_lookup requires --sender")
 

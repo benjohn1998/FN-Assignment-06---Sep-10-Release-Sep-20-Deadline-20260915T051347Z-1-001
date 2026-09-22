@@ -13,7 +13,7 @@ def log_gate_decision(proposal, human_response, outcome):
     with open("trace.jsonl", "a", encoding="utf-8") as file:
         file.write(json.dumps(record) + "\n" )
 
-def send_with_approval(target_message, draft, sender_email):
+def send_with_approval(target_message, draft, sender_email, dry_run=False):
     """Write a reply to the local outbox only after a human approval"""
 
     proposal ={
@@ -27,6 +27,10 @@ def send_with_approval(target_message, draft, sender_email):
 
     print("\nProposed send: ")
     print (json.dumps(proposal, indent =2))
+    if dry_run:
+        outcome = "not sent (dry-run)"
+        log_gate_decision(proposal, "not asked (dry-run)", outcome)
+        return outcome
 
     human_response= input("Say Yes to approve this send: ").strip().lower()
 

@@ -8,7 +8,8 @@ from pathlib import Path
 def collect_pending_actions(messages, grounded_result, send_outcome):
     """Listing the proposed sends that were not approved"""
 
-    if grounded_result["draft"] is None or send_outcome != "not sent":
+    if ( grounded_result["draft"] is None
+        or send_outcome not in ("not sent", "not sent (dry-run)") ):
         return []
 
 

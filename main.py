@@ -410,7 +410,7 @@ def classify_with_llm(message):
         }
     
 
-def main():
+def main(dry_run=False):
     """Process the inbox and report one disposition for every message."""
 
     messages = load_inbox()
@@ -507,7 +507,7 @@ def main():
         print(f"Draft: {grounded_result['draft']}")
 
         target_message = find_message_by_id ( messages, grounded_result["target_message_id"], )
-        outcome = send_with_approval( target_message, grounded_result["draft"], MAILBOX_OWNER_EMAIL, )
+        outcome = send_with_approval( target_message, grounded_result["draft"], MAILBOX_OWNER_EMAIL, dry_run = dry_run,)
         print("Send result:", outcome)
 
     else:
