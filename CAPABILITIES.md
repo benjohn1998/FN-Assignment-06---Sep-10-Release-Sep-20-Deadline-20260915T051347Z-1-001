@@ -39,3 +39,18 @@ The system generates `dashboard.txt` from a completed run with exactly three pan
 The dashboard combines the launch commitment from m026 and m036 into one entry. It also flags the potential 3:00pm conflict between m010 and m061. Pending sends require human approval, and refused or ungrounded messages appear in Flagged.
 
 Run `python main.py` to regenerate the dashboard.
+
+
+## Part 8 — Additional capabilities
+
+X1 — Sender lookup (Tier A)
+Command: `python demo.py --cap sender_lookup --sender aria.f@northwind.vc`
+Lists messages from the chosen address. The example returns m010 and m043.
+
+X2 — Unanswered sent messages (Tier B)
+Command: `python demo.py --cap unanswered_sent`
+Compares messages within each thread to find a message Sam sent to someone else with no later reply. The example returns m044.
+
+X3 — Thread summary (Tier B)
+Command: `python demo.py --cap thread_summary --thread t-launch`
+Summarizes the launch thread and identifies the unresolved pricing-copy approval request in m030.
